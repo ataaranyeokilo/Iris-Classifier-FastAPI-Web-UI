@@ -1,0 +1,26 @@
+stages:
+  get_data:
+    cmd: python src/data/make_dataset.py
+    outs:
+      - data/raw/iris.csv
+  build_features:
+    cmd: python src/features/build_features.py
+    deps:
+      - data/raw/iris.csv
+    outs:
+      - data/processed/iris_processed.csv
+  train:
+    cmd: python src/models/train.py
+    deps:
+      - data/processed/iris_processed.csv
+      - params.yaml
+    outs:
+      - models/model.joblib
+      - reports/metrics.json
+  evaluate:
+    cmd: python src/models/evaluate.py
+    deps:
+      - models/model.joblib
+      - data/processed/iris_processed.csv
+    outs:
+      - reports/figures/confusion_matrix.png

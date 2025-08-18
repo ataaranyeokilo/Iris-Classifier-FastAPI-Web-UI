@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+mlruns/
+mlflow.db
+.dvc/
+dvc_storage/
+/data/raw/*
+!/data/raw/.gitkeep
+/data/processed/*
+!/data/processed/.gitkeep
+/models/*
+!/models/.gitkeep
+/reports/*
+!/reports/.gitkeep
+.vscode/
+.DS_Store

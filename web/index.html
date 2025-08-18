@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Iris Classifier Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+  <div class="max-w-3xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold">Iris Classifier</h1>
+      <p class="text-gray-600">Pick measurements and get a prediction from your FastAPI model.</p>
+    </header>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- Controls -->
+      <div class="bg-white rounded-2xl shadow p-6">
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium mb-1">Sepal Length (cm)</label>
+            <input id="sepal_length" type="range" min="4.0" max="8.0" step="0.1" value="5.1" class="w-full">
+            <div class="text-sm text-gray-500"><span id="sepal_length_val">5.1</span> cm</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Sepal Width (cm)</label>
+            <input id="sepal_width" type="range" min="2.0" max="4.5" step="0.1" value="3.5" class="w-full">
+            <div class="text-sm text-gray-500"><span id="sepal_width_val">3.5</span> cm</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Petal Length (cm)</label>
+            <input id="petal_length" type="range" min="1.0" max="7.0" step="0.1" value="1.4" class="w-full">
+            <div class="text-sm text-gray-500"><span id="petal_length_val">1.4</span> cm</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Petal Width (cm)</label>
+            <input id="petal_width" type="range" min="0.1" max="2.5" step="0.1" value="0.2" class="w-full">
+            <div class="text-sm text-gray-500"><span id="petal_width_val">0.2</span> cm</div>
+          </div>
+
+          <button id="predictBtn" class="w-full rounded-2xl bg-black text-white py-2.5 font-medium hover:bg-gray-800 transition">
+            Predict
+          </button>
+          <p id="status" class="text-sm text-gray-500"></p>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-semibold mb-3">Prediction</h2>
+        <div id="result" class="space-y-3">
+          <div class="text-2xl font-bold" id="class_name">–</div>
+          <div class="text-sm text-gray-500" id="class_id"></div>
+          <div id="probs" class="space-y-1"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://127.0.0.1:8000/predict"; // change if needed
+    const fields = ["sepal_length","sepal_width","petal_length","petal_width"];
+
+    fields.forEach(f => {
+      const input = document.getElementById(f);
+      const label = document.getElementById(f + "_val");
+      input.addEventListener("input", () => label.textContent = Number(input.value).toFixed(1));
+    });
+
+    function payload() {
+      return {
+        sepal_length: Number(document.getElementById("sepal_length").value),
+        sepal_width: Number(document.getElementById("sepal_width").value),
+        petal_length: Number(document.getElementById("petal_length").value),
+        petal_width: Number(document.getElementById("petal_width").value)
+      };
+    }
+
+    async function predict() {
+      const status = document.getElementById("status");
+      status.textContent = "Calling model…";
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload())
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        document.getElementById("class_name").textContent = data.class_name;
+        document.getElementById("class_id").textContent = `class_id: ${data.class_id}`;
+
+        const probs = data.probabilities || {};
+        const probsDiv = document.getElementById("probs");
+        probsDiv.innerHTML = "";
+        Object.entries(probs).forEach(([k, v]) => {
+          const line = document.createElement("div");
+          line.className = "text-sm";
+          line.textContent = `${k}: ${v}`;
+          probsDiv.appendChild(line);
+        });
+
+        status.textContent = "Done.";
+      } catch (err) {
+        status.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    document.getElementById("predictBtn").addEventListener("click", predict);
+  </script>
+</body>
+</html>
