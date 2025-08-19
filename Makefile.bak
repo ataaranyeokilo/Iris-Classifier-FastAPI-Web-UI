@@ -46,15 +46,3 @@ assert requests.get(f"{b}/health").json()["status"]=="ok"
 pl={"sepal_length":5.1,"sepal_width":3.5,"petal_length":1.4,"petal_width":0.2}
 print(requests.post(f"{b}/predict", json=pl).json())
 PY
-
-frontend:
-\tpython3 -m http.server 3000 --directory web
-
-smoke:
-\tpython3 - <<'PY'
-import requests
-b="http://127.0.0.1:8000"
-assert requests.get(f"{b}/health").json()["status"]=="ok"
-pl={"sepal_length":5.1,"sepal_width":3.5,"petal_length":1.4,"petal_width":0.2}
-print(requests.post(f"{b}/predict", json=pl).json())
-PY
